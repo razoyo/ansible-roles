@@ -1,0 +1,24 @@
+# Linked files files
+- name: Parent directories for links
+  ansible.builtin.file:
+    path: '{{ current_dir }}/{{ item|dirname }}'
+    state: directory
+  loop: '{{ link_files + link_dirs }}'
+
+- name: Make room for links
+  ansible.builtin.file:
+    path: '{{ current_dir }}/{{ item }}'
+    state: absent
+  loop: '{{ link_files + link_dirs }}'
+
+- name: Link files
+  ansible.builtin.file:
+    src: '{{ deploy_to }}/links/{{ item }}'
+    dest: '{{ current_dir }}/{{ item }}'
+    state: link
+  loop: '{{ link_files + link_dirs }}'
+
+- name: Install Composer packages
+  community.general.composer:
+    command: install
+    working_dir: '{{ current_dir }}'

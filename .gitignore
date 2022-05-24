@@ -1,0 +1,6 @@
+# Composer
+/vendor/
+
+# VIM
+*.swp
+*.swo

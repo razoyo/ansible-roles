@@ -1,0 +1,29 @@
+  # Apply patches
+  - name: Query all patches
+    find:
+      paths: "{{ current_dir }}/{{ patch_dir|default('m2-hotfixes') }}"
+      file_type: file
+      recurse: False
+    register: patches_query
+  - name: Extract source patches
+    set_fact:
+      patches: "{{ patches_query['files']|map(attribute='path')|list }}"
+  - name: Apply source patches
+    command: "git apply {{ item|quote }}"
+    args:
+      chdir: "{{ current_dir }}"
+    loop: "{{ patches }}"
+
+  # Magento2 build commands
+  - name: Run setup:upgrade
+    command: php -d memory_limit=1G bin/magento -q setup:upgrade
+    args:
+      chdir: "{{ current_dir }}"
+  - name: Run setup:di:compile
+    command: php -d memory_limit=1G bin/magento -q setup:di:compile
+    args:
+      chdir: "{{ current_dir }}"
+  - name: Run setup:static-content:deploy
+    command: php -d memory_limit=1G bin/magento -q setup:static-content:deploy
+    args:
+      chdir: "{{ current_dir }}"

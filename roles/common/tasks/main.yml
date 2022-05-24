@@ -1,0 +1,75 @@
+# Initial setup
+- name: Deploy to directory
+  ansible.builtin.file:
+    path: '{{ deploy_to }}'
+    state: directory
+    mode: 0755
+
+- name: Links directory
+  ansible.builtin.file:
+    path: '{{ deploy_to }}/links'
+    state: directory
+    mode: 0755
+
+- name: Releases directory
+  ansible.builtin.file:
+    path: '{{ deploy_to }}/releases'
+    state: directory
+    mode: 0755
+
+- name: Repo directory
+  ansible.builtin.file:
+    path: '{{ deploy_to }}/repo.git'
+    state: directory
+    mode: 0755
+
+- name: Update git repository
+  ansible.builtin.git:
+    repo: '{{ repo }}'
+    dest: '{{ deploy_to }}/repo.git'
+    version: '{{ version }}'
+    bare: yes
+
+# New release
+- name: Query existing releases
+  find:
+    paths: "{{ deploy_to }}/releases"
+    file_type: directory
+    recurse: False
+  register: existing_releases_query
+
+- name: Sort existing releases
+  set_fact:
+    existing_releases: "{{ existing_releases_query['files']|map(attribute='path')|map('basename')|list|sort }}"
+
+- name: Debug existing releases
+  ansible.builtin.debug: msg={{ existing_releases }}
+
+- name: Register new release
+  ansible.builtin.set_fact:
+    current_release: >-
+      {{ ansible_date_time['year']
+       + ansible_date_time['month']
+       + ansible_date_time['day']
+       + ansible_date_time['hour']
+       + ansible_date_time['minute']
+       + ansible_date_time['second'] }}
+
+- name: Debug current release
+  ansible.builtin.debug: msg={{ current_release }}
+
+- name: Register new release directory
+  ansible.builtin.set_fact:
+    current_dir: '{{ deploy_to }}/releases/{{ current_release }}'
+
+- name: Create the release
+  ansible.builtin.file:
+    path: '{{ current_dir }}'
+    state: directory
+    mode: 0755
+
+- name: Clone source code
+  ansible.builtin.git:
+    repo: '{{ deploy_to }}/repo.git'
+    dest: '{{ current_dir }}'
+    version: '{{ version }}'

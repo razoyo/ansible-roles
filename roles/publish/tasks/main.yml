@@ -1,0 +1,12 @@
+- name: Publish new release
+  ansible.builtin.file:
+    src: '{{ current_dir }}'
+    dest: '{{ deploy_to }}/current'
+    state: link
+    force: True
+
+- name: Remove expired releases
+  file:
+    path: "{{ deploy_to }}/releases/{{ item }}"
+    state: absent
+  loop: "{{ existing_releases[0:-5] }}"

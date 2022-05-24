@@ -1,0 +1,13 @@
+{
+    "name": "razoyo/ansible-roles",
+    "description": "Various Ansible roles",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "William Byrne",
+            "email": "wbyrne@razoyo.com"
+        }
+    ],
+    "require": {}
+}
